@@ -69,8 +69,7 @@ def decrypt_kms_data_key(data_key):
 
 def get_s3_object(bucket, key):
     try:
-        obj = s3.get_object(Bucket=bucket, Key=key)
-        return obj['Body'].read()
+        return s3.get_object(Bucket=bucket, Key=key)
     except ClientError as e:
         if e.response['Error']['Code'] == 'NoSuchKey':
             print(f"Warning: S3 object {key} not found in {bucket}. Returning None.")
