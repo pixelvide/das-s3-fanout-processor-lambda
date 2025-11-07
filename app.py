@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import json
 import boto3
+from botocore.exceptions import ClientError
 import base64
 import zlib
 import aws_encryption_sdk
@@ -66,6 +67,16 @@ def decrypt_kms_data_key(data_key):
 
     return enc_keys[os.environ['DAS_RDS_RESOURCE_ID']][data_key]
 
+def get_s3_object(bucket, key):
+    try:
+        obj = s3.get_object(Bucket=bucket, Key=key)
+        return obj['Body'].read()
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            print(f"Warning: S3 object {key} not found in {bucket}. Returning None.")
+            return None
+        else:
+            raise
 
 # Lambda Handler entry point
 def handler(event, context):
@@ -92,7 +103,9 @@ def handler(event, context):
             print("Bucket: " + s3_record["s3"]["bucket"]["name"])
             print("Object: " + s3_record["s3"]["object"]["key"])
 
-            response = s3.get_object(Bucket=s3_record["s3"]["bucket"]["name"], Key=s3_record["s3"]["object"]["key"])
+            response = get_s3_object(s3_record["s3"]["bucket"]["name"], s3_record["s3"]["object"]["key"])
+            if not response:
+                continue
 
             # Parse s3 file and loop over das events saved in s3 file
             das_records = response['Body'].read().decode('utf-8')
