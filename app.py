@@ -104,6 +104,7 @@ def handler(event, context):
 
             response = get_s3_object(s3_record["s3"]["bucket"]["name"], s3_record["s3"]["object"]["key"])
             if not response:
+                print("Warning: S3 object not found. Skipping.")
                 continue
 
             # Parse s3 file and loop over das events saved in s3 file
