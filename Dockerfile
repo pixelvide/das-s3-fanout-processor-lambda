@@ -1,8 +1,8 @@
-FROM public.ecr.aws/lambda/python:3.9
+FROM public.ecr.aws/lambda/python:3.12
 
 RUN pip install \
     aws-encryption-sdk \
-    pyarrow==14.0.2
+    pyarrow
 
 #COPY app.py .
 COPY . .
